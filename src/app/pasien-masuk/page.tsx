@@ -48,6 +48,7 @@ export default function PasienMasuk() {
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors(prev => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [name]: _, ...rest } = prev;
         return rest;
       });

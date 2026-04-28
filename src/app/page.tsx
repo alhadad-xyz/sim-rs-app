@@ -17,6 +17,8 @@ export default function Home() {
     key: "tanggal_masuk",
     direction: "desc",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchPatients = async () => {
     setLoading(true);
@@ -26,7 +28,12 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchPatients();
+    const load = async () => {
+      const data = await getPatients();
+      setPatients(data);
+      setLoading(false);
+    };
+    load();
   }, []);
 
   const handleSort = (key: keyof Patient) => {
@@ -66,6 +73,12 @@ export default function Home() {
         return 0;
       });
   }, [patients, searchQuery, sortConfig]);
+
+  const totalPages = Math.ceil(filteredAndSortedPatients.length / itemsPerPage);
+  const paginatedPatients = filteredAndSortedPatients.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="bg-background text-on-background flex h-screen overflow-hidden">
@@ -183,7 +196,10 @@ export default function Home() {
                       placeholder="Cari Nama, NIK atau No. RM..."
                       type="text"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setCurrentPage(1);
+                      }}
                     />
                   </div>
                   <button 
@@ -280,7 +296,7 @@ export default function Home() {
                         </td>
                       </tr>
                     ) : (
-                      filteredAndSortedPatients.map((patient) => (
+                      paginatedPatients.map((patient) => (
                         <tr
                           key={patient.id}
                           className="hover:bg-surface-container-low transition-colors cursor-pointer group"
@@ -320,6 +336,48 @@ export default function Home() {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination */}
+              {!loading && filteredAndSortedPatients.length > 0 && (
+                <div className="p-3 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+                  <div className="font-body-sm text-body-sm text-secondary">
+                    Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredAndSortedPatients.length)} dari {filteredAndSortedPatients.length} pasien
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="p-1 rounded text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                    </button>
+                    
+                    <div className="flex items-center">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center font-label-md text-label-md transition-colors ${
+                            currentPage === page 
+                              ? 'bg-primary text-on-primary' 
+                              : 'text-secondary hover:bg-surface-container'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="p-1 rounded text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
