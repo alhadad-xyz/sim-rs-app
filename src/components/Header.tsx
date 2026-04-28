@@ -1,11 +1,24 @@
 import Link from "next/link";
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-6 h-14">
-      <div className="flex items-center gap-6">
-        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 h-14">
+      <div className="flex items-center gap-4 md:gap-6">
+        <button 
+          onClick={onMenuClick}
+          className="md:hidden p-1.5 rounded-md text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors focus:ring-2 focus:ring-blue-500/20"
+        >
+          <span className="material-symbols-outlined text-[20px]">menu</span>
+        </button>
+        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 hidden sm:inline-block">
           SIM RS / Rawat Inap
+        </span>
+        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 sm:hidden">
+          SIM RS
         </span>
         <nav className="hidden md:flex items-center gap-6 h-full pt-4">
           <Link

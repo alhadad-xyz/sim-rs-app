@@ -1,8 +1,26 @@
 import Link from "next/link";
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
-    <aside className="fixed left-0 top-0 h-screen w-60 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col py-4 z-50">
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      <aside 
+        className={`fixed left-0 top-0 h-screen w-60 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col py-4 z-50 transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
       <div className="px-6 pb-6">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
@@ -127,5 +145,6 @@ export function Sidebar() {
         </ul>
       </div>
     </aside>
+    </>
   );
 }

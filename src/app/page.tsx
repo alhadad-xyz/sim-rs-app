@@ -9,6 +9,7 @@ import { getPatients, Patient } from "@/lib/mock-data";
 export default function Home() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Patient;
@@ -82,15 +83,15 @@ export default function Home() {
 
   return (
     <div className="bg-background text-on-background flex h-screen overflow-hidden">
-      <Sidebar />
-      <main className="flex-1 flex flex-col ml-60 h-screen overflow-hidden bg-surface-container-low">
-        <Header />
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      <main className="flex-1 flex flex-col ml-0 md:ml-60 h-screen overflow-hidden bg-surface-container-low transition-all duration-300">
+        <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
         
         {/* Page Content */}
         <div className="flex-1 overflow-y-auto p-container-padding">
           <div className="max-w-7xl mx-auto space-y-stack-md">
             {/* Page Header */}
-            <div className="flex items-end justify-between">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-slate-500 mb-2">
                   <span className="font-label-sm text-label-sm uppercase tracking-wider">
@@ -120,7 +121,7 @@ export default function Home() {
 
               <Link
                 href="/pasien-masuk"
-                className="bg-primary text-on-primary font-label-md text-label-md py-2 px-6 rounded-lg hover:bg-on-primary-fixed-variant transition-all duration-150 flex items-center gap-2 shadow-sm"
+                className="bg-primary text-on-primary font-label-md text-label-md py-2 px-6 rounded-lg hover:bg-on-primary-fixed-variant transition-all duration-150 flex items-center justify-center gap-2 shadow-sm w-full md:w-auto"
               >
                 <span
                   className="material-symbols-outlined text-[20px]"
@@ -133,7 +134,7 @@ export default function Home() {
             </div>
 
             {/* KPI Strip */}
-            <div className="grid grid-cols-4 gap-gutter">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
               <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-inset-stretch">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider">
@@ -185,8 +186,8 @@ export default function Home() {
             {/* Toolbar & Table Card */}
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col">
               {/* Toolbar */}
-              <div className="p-3 border-b border-outline-variant bg-surface-bright flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1 max-w-md">
+              <div className="p-3 border-b border-outline-variant bg-surface-bright flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1 w-full md:max-w-md">
                   <div className="relative w-full">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">
                       search
@@ -211,8 +212,8 @@ export default function Home() {
                     </span>
                   </button>
                 </div>
-                <div className="flex items-center gap-3">
-                  <button className="p-1.5 rounded border border-outline-variant text-secondary hover:bg-surface-container transition-colors flex items-center justify-center gap-1 text-label-md font-medium">
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <button className="flex-1 md:flex-none p-1.5 rounded border border-outline-variant text-secondary hover:bg-surface-container transition-colors flex items-center justify-center gap-1 text-label-md font-medium">
                     <span className="material-symbols-outlined text-[18px]">
                       filter_list
                     </span>
@@ -223,7 +224,7 @@ export default function Home() {
 
               {/* Table */}
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
                   <thead>
                     <tr className="bg-surface-container-low border-b border-outline-variant">
                       <th 

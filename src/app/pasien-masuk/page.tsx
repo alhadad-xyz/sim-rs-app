@@ -403,10 +403,10 @@ export default function PasienMasuk() {
               </div>
 
               {/* Action Footer */}
-              <div className="flex items-center justify-between pt-6 mt-4 border-t border-surface-variant">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 pt-6 mt-4 border-t border-surface-variant">
                 <Link
                   href="/"
-                  className="px-4 py-2 border border-outline-variant bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded hover:bg-surface-container hover:border-outline transition-all duration-150 flex items-center gap-2"
+                  className="px-4 py-2 border border-outline-variant bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded hover:bg-surface-container hover:border-outline transition-all duration-150 flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   <span className="material-symbols-outlined text-[18px]">
                     arrow_back
@@ -414,7 +414,7 @@ export default function PasienMasuk() {
                   Kembali ke Daftar
                 </Link>
                 <button
-                  className="px-6 py-2 bg-primary text-on-primary font-label-md text-label-md rounded hover:bg-on-primary-fixed-variant transition-all duration-150 flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-primary text-on-primary font-label-md text-label-md rounded hover:bg-on-primary-fixed-variant transition-all duration-150 flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                   type="submit"
                   disabled={loading}
                 >
