@@ -86,7 +86,7 @@ export default function Home() {
       <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
       <main className="flex-1 flex flex-col ml-0 md:ml-60 h-screen overflow-hidden bg-surface-container-low transition-all duration-300">
         <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
-        
+
         {/* Page Content */}
         <div className="flex-1 overflow-y-auto p-container-padding">
           <div className="max-w-7xl mx-auto space-y-stack-md">
@@ -113,9 +113,6 @@ export default function Home() {
                   <h2 className="font-h1 text-h1 text-on-surface">
                     Daftar Pasien Rawat Inap
                   </h2>
-                  <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 uppercase tracking-widest border border-green-200">
-                    Data Real-time
-                  </span>
                 </div>
               </div>
 
@@ -203,7 +200,7 @@ export default function Home() {
                       }}
                     />
                   </div>
-                  <button 
+                  <button
                     onClick={fetchPatients}
                     className="p-1.5 rounded border border-outline-variant text-secondary hover:bg-surface-container transition-colors flex items-center justify-center"
                   >
@@ -227,7 +224,7 @@ export default function Home() {
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                   <thead>
                     <tr className="bg-surface-container-low border-b border-outline-variant">
-                      <th 
+                      <th
                         className="py-2 px-3 font-label-md text-label-md text-secondary w-24 cursor-pointer hover:text-primary transition-colors"
                         onClick={() => handleSort('nomor_rm')}
                       >
@@ -240,7 +237,7 @@ export default function Home() {
                           )}
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="py-2 px-3 font-label-md text-label-md text-secondary cursor-pointer hover:text-primary transition-colors"
                         onClick={() => handleSort('nama')}
                       >
@@ -262,7 +259,7 @@ export default function Home() {
                       <th className="py-2 px-3 font-label-md text-label-md text-secondary w-28 text-center">
                         Status
                       </th>
-                      <th 
+                      <th
                         className="py-2 px-3 font-label-md text-label-md text-secondary w-32 text-right cursor-pointer hover:text-primary transition-colors"
                         onClick={() => handleSort('tanggal_masuk')}
                       >
@@ -320,11 +317,10 @@ export default function Home() {
                             {patient.dpjp}
                           </td>
                           <td className="py-2 px-3 text-center">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
-                              patient.status === 'Aktif' ? 'bg-green-50 text-green-700 border-green-200' :
-                              patient.status === 'Kritis' ? 'bg-red-50 text-red-700 border-red-200' :
-                              'bg-blue-50 text-blue-700 border-blue-200'
-                            }`}>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${patient.status === 'Aktif' ? 'bg-green-50 text-green-700 border-green-200' :
+                                patient.status === 'Kritis' ? 'bg-red-50 text-red-700 border-red-200' :
+                                  'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}>
                               {patient.status}
                             </span>
                           </td>
@@ -337,7 +333,7 @@ export default function Home() {
                   </tbody>
                 </table>
               </div>
-              
+
               {/* Pagination */}
               {!loading && filteredAndSortedPatients.length > 0 && (
                 <div className="p-3 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest">
@@ -352,17 +348,16 @@ export default function Home() {
                     >
                       <span className="material-symbols-outlined text-[20px]">chevron_left</span>
                     </button>
-                    
+
                     <div className="flex items-center">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page)}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center font-label-md text-label-md transition-colors ${
-                            currentPage === page 
-                              ? 'bg-primary text-on-primary' 
+                          className={`w-8 h-8 rounded-full flex items-center justify-center font-label-md text-label-md transition-colors ${currentPage === page
+                              ? 'bg-primary text-on-primary'
                               : 'text-secondary hover:bg-surface-container'
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>

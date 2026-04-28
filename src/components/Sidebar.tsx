@@ -40,13 +40,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </p>
           </div>
         </div>
-        <Link
-          href="/pasien-masuk"
-          className="w-full bg-primary text-on-primary py-2 px-4 rounded font-label-md text-label-md hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center gap-2 mb-6"
-        >
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          Pendaftaran Pasien
-        </Link>
       </div>
       <nav className="flex-1 overflow-y-auto px-3">
         <ul className="space-y-1">
