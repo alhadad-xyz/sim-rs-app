@@ -19,14 +19,14 @@ export default function Home() {
     direction: "desc",
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    status: "All",
+    ruangan: "All",
+    jenis_kelamin: "All",
+    dpjp: "All",
+  });
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const itemsPerPage = 5;
-
-  const fetchPatients = async () => {
-    setLoading(true);
-    const data = await getPatients();
-    setPatients(data);
-    setLoading(false);
-  };
 
   useEffect(() => {
     const load = async () => {
@@ -55,15 +55,44 @@ export default function Home() {
     return age;
   };
 
+  const uniqueRuangan = useMemo(() => {
+    const values = patients.map(p => p.ruangan.split(' - ')[0]);
+    return ["All", ...Array.from(new Set(values))];
+  }, [patients]);
+
+  const uniqueDPJP = useMemo(() => {
+    const values = patients.map(p => p.dpjp);
+    return ["All", ...Array.from(new Set(values))];
+  }, [patients]);
+
+  const activeFiltersCount = Object.values(filters).filter(v => v !== "All").length;
+
+  const stats = useMemo(() => {
+    const totalRooms = new Set(patients.map(p => p.ruangan)).size;
+    const icuCount = patients.filter(p => p.ruangan.toLowerCase().includes('icu')).length;
+    const activeCount = patients.filter(p => p.status === 'Aktif' || p.status === 'Kritis').length;
+    const avgLOS = patients.length > 0 
+      ? (patients.reduce((sum, p) => sum + p.durasi_inap, 0) / patients.length).toFixed(1)
+      : "0";
+
+    return { totalRooms, icuCount, activeCount, avgLOS };
+  }, [patients]);
+
   const filteredAndSortedPatients = useMemo(() => {
     return patients
       .filter((p) => {
         const query = searchQuery.toLowerCase();
-        return (
+        const matchesSearch = (
           p.nama.toLowerCase().includes(query) ||
           p.nik.includes(query) ||
           p.nomor_rm.toLowerCase().includes(query)
         );
+        const matchesStatus = filters.status === "All" || p.status === filters.status;
+        const matchesRuangan = filters.ruangan === "All" || p.ruangan.includes(filters.ruangan);
+        const matchesJK = filters.jenis_kelamin === "All" || p.jenis_kelamin === filters.jenis_kelamin;
+        const matchesDPJP = filters.dpjp === "All" || p.dpjp === filters.dpjp;
+
+        return matchesSearch && matchesStatus && matchesRuangan && matchesJK && matchesDPJP;
       })
       .sort((a, b) => {
         const aValue = a[sortConfig.key];
@@ -73,7 +102,7 @@ export default function Home() {
         if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
       });
-  }, [patients, searchQuery, sortConfig]);
+  }, [patients, searchQuery, sortConfig, filters]);
 
   const totalPages = Math.ceil(filteredAndSortedPatients.length / itemsPerPage);
   const paginatedPatients = filteredAndSortedPatients.slice(
@@ -141,7 +170,7 @@ export default function Home() {
                     meeting_room
                   </span>
                 </div>
-                <div className="font-h1 text-h1 text-on-surface">42</div>
+                <div className="font-h1 text-h1 text-on-surface">{loading ? "..." : stats.totalRooms}</div>
               </div>
               <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-inset-stretch">
                 <div className="flex items-center justify-between mb-2">
@@ -152,7 +181,7 @@ export default function Home() {
                     monitor_heart
                   </span>
                 </div>
-                <div className="font-h1 text-h1 text-on-surface">5</div>
+                <div className="font-h1 text-h1 text-on-surface">{loading ? "..." : stats.icuCount}</div>
               </div>
               <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-inset-stretch">
                 <div className="flex items-center justify-between mb-2">
@@ -163,7 +192,7 @@ export default function Home() {
                     personal_injury
                   </span>
                 </div>
-                <div className="font-h1 text-h1 text-primary">{loading ? "..." : patients.length}</div>
+                <div className="font-h1 text-h1 text-primary">{loading ? "..." : stats.activeCount}</div>
               </div>
               <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-inset-stretch">
                 <div className="flex items-center justify-between mb-2">
@@ -175,15 +204,15 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="font-h1 text-h1 text-on-surface">
-                  4.2 <span className="text-body-sm font-normal text-secondary">hari</span>
+                  {loading ? "..." : stats.avgLOS} <span className="text-body-sm font-normal text-secondary">hari</span>
                 </div>
               </div>
             </div>
 
             {/* Toolbar & Table Card */}
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col">
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col relative">
               {/* Toolbar */}
-              <div className="p-3 border-b border-outline-variant bg-surface-bright flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="p-3 border-b border-outline-variant bg-surface-bright flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-t-xl">
                 <div className="flex items-center gap-3 flex-1 w-full md:max-w-md">
                   <div className="relative w-full">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">
@@ -200,22 +229,115 @@ export default function Home() {
                       }}
                     />
                   </div>
-                  <button
-                    onClick={fetchPatients}
-                    className="p-1.5 rounded border border-outline-variant text-secondary hover:bg-surface-container transition-colors flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      refresh
-                    </span>
-                  </button>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                  <button className="flex-1 md:flex-none p-1.5 rounded border border-outline-variant text-secondary hover:bg-surface-container transition-colors flex items-center justify-center gap-1 text-label-md font-medium">
-                    <span className="material-symbols-outlined text-[18px]">
-                      filter_list
-                    </span>
-                    Filter
-                  </button>
+                  <div className="relative flex-1 md:flex-none">
+                    <button
+                      onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+                      className={`w-full md:w-auto p-1.5 rounded border border-outline-variant transition-colors flex items-center justify-center gap-1 text-label-md font-medium ${activeFiltersCount > 0 ? 'bg-primary/10 text-primary border-primary/20' : 'text-secondary hover:bg-surface-container'}`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        filter_list
+                      </span>
+                      Filter {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                    </button>
+                    {isFilterMenuOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setIsFilterMenuOpen(false)}
+                        ></div>
+                        <div className="absolute right-0 mt-2 w-72 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-elevation-3 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                          <div className="p-4 space-y-4">
+                            <div className="flex items-center justify-between border-b border-outline-variant pb-2">
+                              <span className="font-h3 text-label-md text-on-surface">Filters</span>
+                              <button
+                                onClick={() => {
+                                  setFilters({ status: "All", ruangan: "All", jenis_kelamin: "All", dpjp: "All" });
+                                  setCurrentPage(1);
+                                }}
+                                className="text-primary text-[11px] font-medium hover:underline"
+                              >
+                                Reset All
+                              </button>
+                            </div>
+
+                            {/* Status Filter */}
+                            <div className="space-y-1.5">
+                              <label className="text-[11px] font-medium text-outline uppercase tracking-wider">Status</label>
+                              <div className="grid grid-cols-2 gap-1">
+                                {["All", "Aktif", "Kritis", "Sembuh"].map((status) => (
+                                  <button
+                                    key={status}
+                                    onClick={() => {
+                                      setFilters(prev => ({ ...prev, status }));
+                                      setCurrentPage(1);
+                                    }}
+                                    className={`px-2 py-1.5 rounded text-left text-[11px] transition-colors ${filters.status === status ? "bg-primary text-on-primary" : "bg-surface-container-low text-on-surface hover:bg-surface-container"}`}
+                                  >
+                                    {status === "All" ? "Semua" : status}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Ruangan Filter */}
+                            <div className="space-y-1.5">
+                              <label className="text-[11px] font-medium text-outline uppercase tracking-wider">Ruangan / Ward</label>
+                              <select
+                                value={filters.ruangan}
+                                onChange={(e) => {
+                                  setFilters(prev => ({ ...prev, ruangan: e.target.value }));
+                                  setCurrentPage(1);
+                                }}
+                                className="w-full bg-surface-container-low border border-outline-variant rounded px-2 py-1.5 text-body-sm text-on-surface outline-none focus:border-primary"
+                              >
+                                {uniqueRuangan.map(r => (
+                                  <option key={r} value={r}>{r === "All" ? "Semua Ruangan" : r}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* JK Filter */}
+                            <div className="space-y-1.5">
+                              <label className="text-[11px] font-medium text-outline uppercase tracking-wider">Jenis Kelamin</label>
+                              <div className="flex gap-2">
+                                {["All", "L", "P"].map((jk) => (
+                                  <button
+                                    key={jk}
+                                    onClick={() => {
+                                      setFilters(prev => ({ ...prev, jenis_kelamin: jk }));
+                                      setCurrentPage(1);
+                                    }}
+                                    className={`flex-1 py-1.5 rounded text-center text-[11px] transition-colors ${filters.jenis_kelamin === jk ? "bg-primary text-on-primary" : "bg-surface-container-low text-on-surface hover:bg-surface-container"}`}
+                                  >
+                                    {jk === "All" ? "Semua" : jk === "L" ? "Laki-laki" : "Perempuan"}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* DPJP Filter */}
+                            <div className="space-y-1.5">
+                              <label className="text-[11px] font-medium text-outline uppercase tracking-wider">Dokter DPJP</label>
+                              <select
+                                value={filters.dpjp}
+                                onChange={(e) => {
+                                  setFilters(prev => ({ ...prev, dpjp: e.target.value }));
+                                  setCurrentPage(1);
+                                }}
+                                className="w-full bg-surface-container-low border border-outline-variant rounded px-2 py-1.5 text-body-sm text-on-surface outline-none focus:border-primary"
+                              >
+                                {uniqueDPJP.map(d => (
+                                  <option key={d} value={d}>{d === "All" ? "Semua Dokter" : d}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -231,6 +353,19 @@ export default function Home() {
                         <div className="flex items-center gap-1">
                           No. RM
                           {sortConfig.key === 'nomor_rm' && (
+                            <span className="material-symbols-outlined text-[14px]">
+                              {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="py-2 px-3 font-label-md text-label-md text-secondary w-32 cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => handleSort('nik')}
+                      >
+                        <div className="flex items-center gap-1">
+                          NIK
+                          {sortConfig.key === 'nik' && (
                             <span className="material-symbols-outlined text-[14px]">
                               {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
                             </span>
@@ -286,10 +421,25 @@ export default function Home() {
                       </tr>
                     ) : filteredAndSortedPatients.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-12 text-center">
+                        <td colSpan={7} className="py-12 text-center rounded-b-xl">
                           <div className="flex flex-col items-center gap-2 text-outline">
                             <span className="material-symbols-outlined text-[48px]">person_off</span>
-                            <p className="text-body-sm font-medium">Tidak ada pasien ditemukan</p>
+                            <p className="text-body-sm font-medium">
+                              {activeFiltersCount > 0 || searchQuery 
+                                ? "Tidak ada pasien yang cocok dengan kriteria filter" 
+                                : "Tidak ada pasien ditemukan"}
+                            </p>
+                            {(activeFiltersCount > 0 || searchQuery) && (
+                              <button 
+                                onClick={() => {
+                                  setFilters({ status: "All", ruangan: "All", jenis_kelamin: "All", dpjp: "All" });
+                                  setSearchQuery("");
+                                }}
+                                className="text-primary text-body-sm font-medium hover:underline mt-2"
+                              >
+                                Bersihkan semua filter
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -301,6 +451,9 @@ export default function Home() {
                         >
                           <td className="py-2 px-3 font-code text-code text-secondary">
                             {patient.nomor_rm}
+                          </td>
+                          <td className="py-2 px-3 font-body-sm text-body-sm text-secondary">
+                            {patient.nik}
                           </td>
                           <td className="py-2 px-3">
                             <div className="font-body-sm text-body-sm font-medium text-on-surface">
@@ -318,8 +471,8 @@ export default function Home() {
                           </td>
                           <td className="py-2 px-3 text-center">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${patient.status === 'Aktif' ? 'bg-green-50 text-green-700 border-green-200' :
-                                patient.status === 'Kritis' ? 'bg-red-50 text-red-700 border-red-200' :
-                                  'bg-blue-50 text-blue-700 border-blue-200'
+                              patient.status === 'Kritis' ? 'bg-red-50 text-red-700 border-red-200' :
+                                'bg-blue-50 text-blue-700 border-blue-200'
                               }`}>
                               {patient.status}
                             </span>
@@ -336,7 +489,7 @@ export default function Home() {
 
               {/* Pagination */}
               {!loading && filteredAndSortedPatients.length > 0 && (
-                <div className="p-3 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+                <div className="p-3 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest rounded-b-xl">
                   <div className="font-body-sm text-body-sm text-secondary">
                     Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredAndSortedPatients.length)} dari {filteredAndSortedPatients.length} pasien
                   </div>
@@ -355,8 +508,8 @@ export default function Home() {
                           key={page}
                           onClick={() => setCurrentPage(page)}
                           className={`w-8 h-8 rounded-full flex items-center justify-center font-label-md text-label-md transition-colors ${currentPage === page
-                              ? 'bg-primary text-on-primary'
-                              : 'text-secondary hover:bg-surface-container'
+                            ? 'bg-primary text-on-primary'
+                            : 'text-secondary hover:bg-surface-container'
                             }`}
                         >
                           {page}
